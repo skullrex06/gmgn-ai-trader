@@ -253,3 +253,25 @@ fetch(API_BASE + "/api/health").then(r => r.json()).then(d => {
 if (apiToken) loadDashboard().then(() => setApiStatus(true)).catch(() => {
   sessionStorage.removeItem(TOKEN_KEY); apiToken = ""; setApiStatus(false);
 });
+
+window.verifyApiToken = async function () {
+ const input=document.getElementById("apiTokenInput");
+ const error=document.getElementById("apiConnectError");
+ const button=document.getElementById("apiConnectSubmit");
+ const entered=input ? input.value.trim() : "";
+ if(!entered){if(error)error.textContent="Masukkan API_ACCESS_TOKEN dahulu.";return;}
+ const old=apiToken; apiToken=entered;
+ if(button){button.disabled=true;button.textContent="Checking...";}
+ if(error)error.textContent="";
+ try{
+   await api("/api/settings");
+   if(document.getElementById("apiRemember")?.checked)sessionStorage.setItem(TOKEN_KEY,entered);
+   else sessionStorage.removeItem(TOKEN_KEY);
+   document.getElementById("apiConnectModal").style.display="none";
+   setApiStatus(true,"Connected to Worker and D1.");
+   await loadDashboard();
+ }catch(e){
+   apiToken=old;
+   if(error)error.textContent=e.message+" — Semak token dan D1 binding DB.";
+ }finally{if(button){button.disabled=false;button.textContent="Verify & Connect";}}
+};
