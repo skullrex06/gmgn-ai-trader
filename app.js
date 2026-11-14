@@ -31,12 +31,8 @@ async function api(path, options = {}) {
   return data;
 }
 
-const topActions = document.querySelector(".top-actions");
-const connectBtn = document.createElement("button");
-connectBtn.className = "outline-btn api-connect-btn";
-connectBtn.id = "apiConnectBtn";
-connectBtn.textContent = apiToken ? "API Connected?" : "Connect API";
-topActions?.prepend(connectBtn);
+const connectBtn = $("apiConnectBtn");
+if (connectBtn) connectBtn.textContent = apiToken ? "API Connected?" : "Connect API";
 
 const smartPanel = $("smart-money");
 const walletEmpty = smartPanel?.querySelector(".empty-state");
