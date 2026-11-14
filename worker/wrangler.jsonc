@@ -10,7 +10,7 @@
     {
       "binding": "DB",
       "database_name": "gmgn-ai-trader-db",
-      "database_id": "REPLACE_WITH_YOUR_D1_DATABASE_ID"
+      "database_id": "b174ecfc-d6b7-447f-9c70-a0ecba5487a5"
     }
   ]
 }
