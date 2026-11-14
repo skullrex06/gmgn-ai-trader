@@ -284,21 +284,38 @@ document.querySelectorAll(".sidebar nav a").forEach(link => {
   });
 });
 
-// Health is public; protected data loads only after the user enters their secret.
-fetch(API_BASE + "/api/health").then(r => {
-  if (!r.ok) throw new Error("HTTP " + r.status);
-  return r.json();
-}).then(d => {
+// Health check with a timeout so the badge never remains stuck on CHECKING.
+(async function checkBackendHealth() {
   const badge = $("backendHealthLabel");
-  if (d.ok) {
-    if (badge) { badge.textContent = "● BACKEND ONLINE"; badge.classList.remove("health-checking","health-offline"); badge.classList.add("health-online"); }
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 7000);
+  try {
+    const response = await fetch(API_BASE + "/api/health", {
+      method: "GET",
+      cache: "no-store",
+      signal: controller.signal
+    });
+    if (!response.ok) throw new Error("HTTP " + response.status);
+    const data = await response.json();
+    if (!data.ok) throw new Error("Health response not OK");
+    if (badge) {
+      badge.textContent = "● BACKEND ONLINE";
+      badge.classList.remove("health-checking", "health-offline");
+      badge.classList.add("health-online");
+    }
     showToast("Backend online · Paper trading only.");
-  } else throw new Error("Health response not OK");
-}).catch(() => {
-  const badge = $("backendHealthLabel");
-  if (badge) { badge.textContent = "● BACKEND OFFLINE"; badge.classList.remove("health-checking","health-online"); badge.classList.add("health-offline"); }
-  showToast("Backend health check unavailable.");
-});
+  } catch (error) {
+    if (badge) {
+      badge.textContent = error.name === "AbortError" ? "● HEALTH TIMEOUT" : "● BACKEND OFFLINE";
+      badge.classList.remove("health-checking", "health-online");
+      badge.classList.add("health-offline");
+    }
+    showToast(error.name === "AbortError" ? "Backend health check timed out." : "Backend health check unavailable.");
+  } finally {
+    clearTimeout(timeout);
+  }
+})();
+
 if (apiToken) loadDashboard().then(() => setApiStatus(true)).catch(() => {
   sessionStorage.removeItem(TOKEN_KEY); apiToken = ""; setApiStatus(false);
 });
