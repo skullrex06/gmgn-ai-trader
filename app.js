@@ -63,22 +63,58 @@ function setApiStatus(connected, label) {
   if (label) showToast(label);
 }
 
-connectBtn.addEventListener("click", async () => {
-  const entered = prompt("Paste API_ACCESS_TOKEN. Token is kept only in this browser tab session and is not saved to GitHub.");
-  if (entered === null) return;
-  if (!entered.trim()) return showToast("Token kosong.");
-  apiToken = entered.trim();
-  sessionStorage.setItem(TOKEN_KEY, apiToken);
-  try {
-    await loadDashboard();
-    setApiStatus(true, "Backend connected.");
-  } catch (e) {
-    apiToken = "";
-    sessionStorage.removeItem(TOKEN_KEY);
-    setApiStatus(false);
-    showToast(e.message);
+// Use an in-page dialog instead of prompt(), which some mobile browsers suppress.
+function openApiDialog() {
+  let modal = $("apiConnectModal");
+  if (!modal) {
+    modal = document.createElement("div");
+    modal.id = "apiConnectModal";
+    modal.className = "api-modal";
+    modal.innerHTML = `
+      <div class="api-modal-card" role="dialog" aria-modal="true" aria-labelledby="apiModalTitle">
+        <button type="button" class="api-modal-close" id="apiModalClose" aria-label="Close">×</button>
+        <div class="eyebrow">SECURE CONNECTION</div>
+        <h3 id="apiModalTitle">Connect Cloudflare API</h3>
+        <p>Masukkan nilai rahsia <b>API_ACCESS_TOKEN</b> yang ditetapkan dalam Cloudflare Worker → Settings → Variables and Secrets.</p>
+        <input id="apiTokenInput" type="password" autocomplete="off" placeholder="Paste API_ACCESS_TOKEN">
+        <label class="api-remember"><input id="apiRemember" type="checkbox"> Remember in this tab session</label>
+        <div id="apiConnectError" class="api-connect-error" role="status"></div>
+        <button type="button" id="apiConnectSubmit" class="primary-btn">Verify & Connect</button>
+      </div>`;
+    document.body.append(modal);
+    $("apiModalClose").addEventListener("click", () => modal.classList.remove("open"));
+    modal.addEventListener("click", e => { if (e.target === modal) modal.classList.remove("open"); });
+    $("apiConnectSubmit").addEventListener("click", async () => {
+      const entered = $("apiTokenInput").value.trim();
+      const errorBox = $("apiConnectError");
+      if (!entered) { errorBox.textContent = "Token belum dimasukkan."; return; }
+      const submit = $("apiConnectSubmit");
+      submit.disabled = true; submit.textContent = "Checking...";
+      errorBox.textContent = "";
+      const previous = apiToken;
+      apiToken = entered;
+      try {
+        // A successful protected settings read verifies token + D1 binding.
+        await api("/api/settings");
+        if ($("apiRemember").checked) sessionStorage.setItem(TOKEN_KEY, entered);
+        else sessionStorage.removeItem(TOKEN_KEY);
+        modal.classList.remove("open");
+        setApiStatus(true, "Connected to Worker and D1.");
+        await loadDashboard();
+      } catch (e) {
+        apiToken = previous;
+        errorBox.textContent = e.message + " — Semak API_ACCESS_TOKEN dan D1 binding DB.";
+      } finally {
+        submit.disabled = false; submit.textContent = "Verify & Connect";
+      }
+    });
   }
-});
+  $("apiTokenInput").value = "";
+  $("apiConnectError").textContent = "";
+  modal.classList.add("open");
+  setTimeout(() => $("apiTokenInput").focus(), 80);
+}
+connectBtn?.addEventListener("click", openApiDialog);
 
 async function loadWallets() {
   const data = await api("/api/wallets");
