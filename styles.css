@@ -104,3 +104,12 @@ footer{padding:5px 2px 12px}
 .api-modal-card .primary-btn:disabled{opacity:.55}
 
 #apiConnectBtn{position:relative;z-index:10001;pointer-events:auto;touch-action:manipulation;cursor:pointer}
+
+#apiConnectModal{position:fixed;inset:0;z-index:999999;background:rgba(3,7,16,.92);align-items:center;justify-content:center;padding:18px}
+#apiConnectModal[style*="display: flex"]{display:flex!important}
+#apiConnectModal .api-modal-card{width:min(100%,390px);padding:24px;background:#111b2e;border:1px solid #51e0d0;border-radius:16px;position:relative}
+#apiConnectModal h3{margin:8px 0 12px;font-size:20px}
+#apiConnectModal p{font-size:12px;line-height:1.6;color:#aab6ca}
+#apiConnectModal #apiTokenInput{width:100%;padding:13px;border-radius:8px;background:#081222;color:white;border:1px solid #52617d;font-size:14px}
+#apiConnectModal .api-modal-close{position:absolute;right:12px;top:8px;background:none;border:0;color:white;font-size:28px}
+#apiConnectModal #apiConnectSubmit{width:100%;justify-content:center;margin-top:12px}
