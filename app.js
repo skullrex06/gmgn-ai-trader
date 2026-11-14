@@ -285,9 +285,20 @@ document.querySelectorAll(".sidebar nav a").forEach(link => {
 });
 
 // Health is public; protected data loads only after the user enters their secret.
-fetch(API_BASE + "/api/health").then(r => r.json()).then(d => {
-  if (d.ok) showToast("Backend online · Paper trading only.");
-}).catch(() => showToast("Backend health check unavailable."));
+fetch(API_BASE + "/api/health").then(r => {
+  if (!r.ok) throw new Error("HTTP " + r.status);
+  return r.json();
+}).then(d => {
+  const badge = $("backendHealthLabel");
+  if (d.ok) {
+    if (badge) { badge.textContent = "● BACKEND ONLINE"; badge.classList.remove("health-checking","health-offline"); badge.classList.add("health-online"); }
+    showToast("Backend online · Paper trading only.");
+  } else throw new Error("Health response not OK");
+}).catch(() => {
+  const badge = $("backendHealthLabel");
+  if (badge) { badge.textContent = "● BACKEND OFFLINE"; badge.classList.remove("health-checking","health-online"); badge.classList.add("health-offline"); }
+  showToast("Backend health check unavailable.");
+});
 if (apiToken) loadDashboard().then(() => setApiStatus(true)).catch(() => {
   sessionStorage.removeItem(TOKEN_KEY); apiToken = ""; setApiStatus(false);
 });
