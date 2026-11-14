@@ -62,3 +62,23 @@ footer{padding:5px 2px 12px}
  .stat-top p{font-size:10px}
  .stat-card h3{font-size:17px}
 }
+
+
+/* Phase 4 API integration components */
+.api-connect-btn{padding:8px 10px;font-size:10px;white-space:nowrap}
+.api-connect-btn.connected{border-color:rgba(34,211,160,.45);color:#28d9a4}
+.api-list{display:flex;flex-direction:column;gap:7px;max-height:260px;overflow:auto;margin-top:10px}
+.api-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 11px;border:1px solid var(--line,rgba(130,150,190,.14));border-radius:9px;background:rgba(255,255,255,.025);min-width:0}
+.api-row>div{min-width:0;display:flex;flex-direction:column;gap:4px}
+.api-row b{font-size:11px}
+.api-row small{font-size:9px;color:var(--muted,#8d9ab3);overflow-wrap:anywhere}
+.danger-btn{border:1px solid rgba(255,90,110,.25);background:rgba(255,90,110,.08);color:#ff8292;border-radius:7px;padding:6px 9px;font-size:10px;white-space:nowrap}
+.risk-save{margin-top:12px;padding:8px 12px;font-size:10px}
+.paper-buy-btn{padding:8px 11px;font-size:10px;white-space:nowrap}
+.negative{color:#ff8292}
+@media(max-width:760px){
+ .api-connect-btn{font-size:8px;padding:7px}
+ .api-row{padding:8px}
+ .api-row small{font-size:8px}
+ .paper-buy-btn{font-size:9px;padding:7px}
+}
