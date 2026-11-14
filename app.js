@@ -116,6 +116,44 @@ window.openApiDialog = function openApiDialog() {
 }
 connectBtn?.addEventListener("click", openApiDialog);
 
+// Read-only API/D1 diagnostics: confirms all core tables and read routes respond.
+const apiTestBtn = $("apiTestBtn");
+apiTestBtn?.addEventListener("click", async () => {
+  if (!apiToken) { showToast("Connect API dahulu."); return; }
+  apiTestBtn.disabled = true;
+  const original = apiTestBtn.textContent;
+  apiTestBtn.textContent = "Testing...";
+  const checks = [
+    ["Settings / bot_settings", "/api/settings", "settings"],
+    ["Wallets / wallet_watchlist", "/api/wallets", "wallets"],
+    ["Positions / paper_positions", "/api/paper/positions", "positions"],
+    ["Trades / paper_trades", "/api/paper/trades?limit=5", "trades"]
+  ];
+  const results = [];
+  try {
+    for (const [label, path, key] of checks) {
+      try {
+        const data = await api(path);
+        if (!(key in data)) throw new Error("Response field missing: " + key);
+        results.push("✓ " + label);
+      } catch (e) { results.push("✗ " + label + ": " + e.message); }
+    }
+    const passed = results.filter(x => x.startsWith("✓")).length;
+    showToast("D1 diagnostics: " + passed + "/4 passed. See API Test results.");
+    let box = $("apiTestResults");
+    if (!box) {
+      box = document.createElement("pre");
+      box.id = "apiTestResults";
+      box.style.cssText = "white-space:pre-wrap;font:11px/1.7 monospace;color:#b9c7dc;background:#0b1424;border:1px solid #263650;border-radius:10px;padding:12px;margin:12px 0";
+      document.querySelector(".topbar")?.after(box);
+    }
+    box.textContent = "API / D1 DIAGNOSTICS — " + passed + "/4 passed\\n" + results.join("\\n");
+  } finally {
+    apiTestBtn.disabled = false;
+    apiTestBtn.textContent = original;
+  }
+});
+
 async function loadWallets() {
   const data = await api("/api/wallets");
   const box = $("walletList");
