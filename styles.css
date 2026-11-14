@@ -82,3 +82,9 @@ footer{padding:5px 2px 12px}
  .api-row small{font-size:8px}
  .paper-buy-btn{font-size:9px;padding:7px}
 }
+
+/* Keep API connect action visible in the compact mobile header */
+.top-actions{flex-wrap:nowrap;min-width:0}
+.api-connect-btn{width:auto;flex:0 0 auto;padding:8px 10px;font-size:9px;border-color:#51e0d0;color:#51e0d0}
+@media(max-width:760px){.top-actions{gap:5px}.api-connect-btn{font-size:7px;padding:7px 6px;letter-spacing:-.2px}.mode-pill{font-size:7px;padding:7px 6px}}
+@media(max-width:380px){.api-connect-btn{font-size:6px;padding:6px 4px}.top-actions{gap:4px}}
