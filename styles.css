@@ -113,3 +113,10 @@ footer{padding:5px 2px 12px}
 #apiConnectModal #apiTokenInput{width:100%;padding:13px;border-radius:8px;background:#081222;color:white;border:1px solid #52617d;font-size:14px}
 #apiConnectModal .api-modal-close{position:absolute;right:12px;top:8px;background:none;border:0;color:white;font-size:28px}
 #apiConnectModal #apiConnectSubmit{width:100%;justify-content:center;margin-top:12px}
+
+/* Persistent backend health indicator */
+#backendHealthLabel{font-size:8px;padding:8px 9px;white-space:nowrap}
+#backendHealthLabel.health-checking{color:#f3c969;background:#342b18}
+#backendHealthLabel.health-online{color:#55d6a3;background:#15342f}
+#backendHealthLabel.health-offline{color:#ff8797;background:#3a1d2a}
+@media(max-width:760px){#backendHealthLabel{font-size:7px;padding:7px 6px}}
