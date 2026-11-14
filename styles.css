@@ -102,3 +102,5 @@ footer{padding:5px 2px 12px}
 .api-connect-error{color:#ff8797;font-size:11px;line-height:1.5;margin:7px 0}
 .api-modal-card .primary-btn{width:100%;justify-content:center;border:0;cursor:pointer}
 .api-modal-card .primary-btn:disabled{opacity:.55}
+
+#apiConnectBtn{position:relative;z-index:10001;pointer-events:auto;touch-action:manipulation;cursor:pointer}
