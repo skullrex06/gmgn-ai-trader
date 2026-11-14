@@ -64,7 +64,7 @@ function setApiStatus(connected, label) {
 }
 
 // Use an in-page dialog instead of prompt(), which some mobile browsers suppress.
-function openApiDialog() {
+window.openApiDialog = function openApiDialog() {
   let modal = $("apiConnectModal");
   if (!modal) {
     modal = document.createElement("div");
