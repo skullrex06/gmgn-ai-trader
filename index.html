@@ -45,15 +45,37 @@
 </main></div><div id="apiConnectModal" class="api-modal"><div class="api-modal-card"><button type="button" class="api-modal-close" onclick="document.getElementById('apiConnectModal').classList.remove('open')">×</button><p class="eyebrow">SECURE CONNECTION</p><h3>Connect Cloudflare API</h3><p>Masukkan nilai rahsia <b>API_ACCESS_TOKEN</b> daripada Cloudflare Worker → Settings → Variables and Secrets.</p><input id="apiTokenInput" type="password" autocomplete="off" placeholder="Paste API_ACCESS_TOKEN"><label class="api-remember"><input id="apiRemember" type="checkbox"> Remember in this tab session</label><div id="apiConnectError" class="api-connect-error"></div><button type="button" id="apiConnectSubmit" class="primary-btn" onclick="(async function(){var input=document.getElementById('apiTokenInput'),err=document.getElementById('apiConnectError'),btn=document.getElementById('apiConnectSubmit'),token=input.value.trim();if(!token){err.textContent='Masukkan API_ACCESS_TOKEN dahulu.';input.focus();return;}btn.disabled=true;btn.textContent='Checking...';err.textContent='Menghubungi Cloudflare Worker...';try{var r=await fetch('https://gmgn-ai-trader.umayaris06.workers.dev/api/settings',{headers:{'Authorization':'Bearer '+token}});var d=await r.json().catch(function(){return {};});if(!r.ok||d.ok===false)throw new Error(d.error||('HTTP '+r.status));sessionStorage.setItem('gmgn_api_token_session',token);err.textContent='Connected! Loading dashboard...';location.reload();}catch(e){err.textContent='Connection failed: '+e.message;}finally{btn.disabled=false;btn.textContent='Verify & Connect';}})()">Verify &amp; Connect</button></div></div><div id="toast" class="toast" role="status" aria-live="polite"></div><script src="app.js?v=health-inline-05"></script><script>(function(){var badge=document.getElementById("backendHealthLabel");if(!badge)return;badge.textContent="● CHECKING BACKEND";var done=false;var timer=setTimeout(function(){if(!done){done=true;badge.textContent="● HEALTH TIMEOUT";badge.className="mode-pill health-offline";}},8000);fetch("https://gmgn-ai-trader.umayaris06.workers.dev/api/health?check="+Date.now(),{cache:"no-store"}).then(function(r){if(!r.ok)throw new Error("HTTP "+r.status);return r.json();}).then(function(d){done=true;clearTimeout(timer);if(!d.ok)throw new Error("Invalid health response");badge.textContent="● BACKEND ONLINE";badge.className="mode-pill health-online";}).catch(function(e){done=true;clearTimeout(timer);badge.textContent="● BACKEND OFFLINE";badge.className="mode-pill health-offline";badge.title=String(e);});})();</script>
 <script>
 window.runApiDiagnostics=async function(){
- var btn=document.getElementById('apiTestBtn'), token=sessionStorage.getItem('gmgn_api_token_session'), badge=document.getElementById('backendHealthLabel');
- var old=btn.textContent; btn.disabled=true; btn.textContent='TESTING...';
+ var btn=document.getElementById('apiTestBtn');
+ var token=sessionStorage.getItem('gmgn_api_token_session')||'';
  var box=document.getElementById('apiTestResults');
- if(!box){box=document.createElement('pre');box.id='apiTestResults';box.style.cssText='white-space:pre-wrap;overflow-wrap:anywhere;background:#10182a;color:#eef3ff;border:1px solid #51e0d0;border-radius:10px;padding:14px;margin:12px 16px;font:12px/1.7 monospace';document.querySelector('.topbar').after(box);}
- if(!token){box.textContent='API TEST FAILED\\nNo API token found in this tab. Tap Connect API and verify again.';btn.disabled=false;btn.textContent=old;return;}
+ if(!box){
+  box=document.createElement('div');box.id='apiTestResults';
+  box.style.cssText='position:fixed;z-index:1000000;left:12px;right:12px;top:90px;max-height:65vh;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;background:#10182a;color:#eef3ff;border:1px solid #51e0d0;border-radius:12px;padding:16px;font:12px/1.8 monospace;box-shadow:0 12px 40px #0009';
+  document.body.appendChild(box);
+ }
+ box.style.display='block';box.textContent='Starting API / D1 diagnostics...';
+ if(!token){
+  box.textContent='API TEST FAILED\\nNo API token found in this browser tab. Tap Connect API, enter API_ACCESS_TOKEN, then Verify & Connect.';
+  return;
+ }
+ if(btn){btn.disabled=true;btn.textContent='TESTING...';}
  var tests=[['Settings / bot_settings','/api/settings','settings'],['Wallets / wallet_watchlist','/api/wallets','wallets'],['Positions / paper_positions','/api/paper/positions','positions'],['Trades / paper_trades','/api/paper/trades?limit=5','trades']];
- var lines=['GMGN API / D1 TEST'];
- for(var t of tests){try{var r=await fetch('https://gmgn-ai-trader.umayaris06.workers.dev'+t[1],{headers:{'Authorization':'Bearer '+token,'Cache-Control':'no-cache'}});var d=await r.json();if(!r.ok)throw new Error('HTTP '+r.status+' — '+(d.error||'Request failed'));if(!(t[2] in d))throw new Error('Unexpected response shape');lines.push('PASS  '+t[0]);}catch(e){lines.push('FAIL  '+t[0]+' — '+e.message);}}
- var passed=lines.filter(x=>x.indexOf('PASS  ')===0).length;lines.splice(1,0,'RESULT: '+passed+'/4 PASSED');
- box.textContent=lines.join('\\n');btn.disabled=false;btn.textContent=old;
+ var lines=['GMGN API / D1 TEST','Checking 4 protected endpoints...'];
+ for(var t of tests){
+  try{
+   var r=await fetch('https://gmgn-ai-trader.umayaris06.workers.dev'+t[1],{method:'GET',cache:'no-store',headers:{'Authorization':'Bearer '+token}});
+   var d=await r.json().catch(function(){return {};});
+   if(!r.ok)throw new Error('HTTP '+r.status+' — '+(d.error||'Request failed'));
+   if(!(t[2] in d))throw new Error('Unexpected response format');
+   lines.push('PASS  '+t[0]);
+  }catch(e){lines.push('FAIL  '+t[0]+' — '+e.message);}
+  box.textContent=lines.join('\\n');
+ }
+ var passed=lines.filter(function(x){return x.indexOf('PASS  ')===0;}).length;
+ lines.splice(1,0,'RESULT: '+passed+'/4 PASSED');
+ box.textContent=lines.join('\\n')+'\\n\\n[Close]'; 
+ var close=document.createElement('button');close.textContent='Close';close.style.cssText='margin-top:12px;padding:9px 18px;border:0;border-radius:8px;background:#51e0d0;color:#07111f;font-weight:700';
+ close.onclick=function(){box.style.display='none';};box.appendChild(close);
+ if(btn){btn.disabled=false;btn.textContent='Test API';}
 };
-</script></body></html>
+</script></body></html>>
